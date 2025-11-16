@@ -1,0 +1,29 @@
+[package]
+name = "array-plus-extra"
+version = "0.1.0"
+edition = "2024"
+authors = ["Emil Fresk <emil.fresk@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "An array type that holds N+EXTRA elements with const generic parameters, providing safe slice access to contiguous memory"
+repository = "https://github.com/korken89/array-plus-extra"
+documentation = "https://docs.rs/array-plus-extra"
+homepage = "https://github.com/korken89/array-plus-extra"
+keywords = ["array", "const-generic", "slice", "no-std"]
+categories = ["data-structures", "no-std", "embedded"]
+readme = "README.md"
+rust-version = "1.85"
+
+[features]
+default = []
+serde = ["dep:serde"]
+postcard_max_size = ["dep:postcard", "serde"]
+defmt = ["dep:defmt"]
+
+[dependencies]
+serde = { version = "1.0", default-features = false, optional = true }
+postcard = { version = "1.1", features = ["experimental-derive"], optional = true }
+defmt = { version = "1.0", optional = true }
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
