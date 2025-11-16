@@ -39,6 +39,26 @@ where
 }
 
 impl<T, const N: usize, const EXTRA: usize> ArrayPlusExtra<T, N, EXTRA> {
+    /// Convert to an array of size `M`. This checks at compile time that `M == N + EXTRA`.
+    #[inline]
+    pub const fn as_array<const M: usize>(&self) -> &[T; M] {
+        const { assert!(M == N + EXTRA) }
+        // SAFETY: #[repr(C)] ensures contiguous layout. Compile-time assert guarantees
+        // M == N + EXTRA.
+        unsafe { core::mem::transmute(self) }
+    }
+
+    /// Convert into an owned array of size `M`. This checks at compile time that `M == N + EXTRA`.
+    #[inline]
+    pub const fn into_array<const M: usize>(self) -> [T; M] {
+        const { assert!(M == N + EXTRA) }
+        // SAFETY: #[repr(C)] ensures contiguous layout. Compile-time assert guarantees
+        // M == N + EXTRA. We manually forget self to not have double drop.
+        let this = unsafe { core::ptr::read(&self as *const Self as *const [T; M]) };
+        core::mem::forget(self);
+        this
+    }
+
     /// Get a slice view of all N+EXTRA elements.
     /// This is a const fn that can be used in const contexts.
     #[inline]
@@ -409,5 +429,27 @@ mod tests {
         const LEN: usize = SLICE.len();
 
         assert_eq!(LEN, 0);
+    }
+
+    #[test]
+    fn test_as_array() {
+        let mut arr: ArrayPlusExtra<i32, 2, 3> = ArrayPlusExtra::new(0);
+        arr[0] = 10;
+        arr[4] = 50;
+
+        let array_ref: &[i32; 5] = arr.as_array();
+        assert_eq!(array_ref[0], 10);
+        assert_eq!(array_ref[4], 50);
+    }
+
+    #[test]
+    fn test_into_array() {
+        let mut arr: ArrayPlusExtra<i32, 2, 3> = ArrayPlusExtra::new(0);
+        arr[0] = 10;
+        arr[4] = 50;
+
+        let array: [i32; 5] = arr.into_array();
+        assert_eq!(array[0], 10);
+        assert_eq!(array[4], 50);
     }
 }
