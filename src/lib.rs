@@ -48,6 +48,15 @@ impl<T, const N: usize, const EXTRA: usize> ArrayPlusExtra<T, N, EXTRA> {
         unsafe { core::mem::transmute(self) }
     }
 
+    /// Convert to a mutable array of size `M`. This checks at compile time that `M == N + EXTRA`.
+    #[inline]
+    pub const fn as_array_mut<const M: usize>(&mut self) -> &mut [T; M] {
+        const { assert!(M == N + EXTRA) }
+        // SAFETY: #[repr(C)] ensures contiguous layout. Compile-time assert guarantees
+        // M == N + EXTRA.
+        unsafe { core::mem::transmute(self) }
+    }
+
     /// Convert into an owned array of size `M`. This checks at compile time that `M == N + EXTRA`.
     #[inline]
     pub const fn into_array<const M: usize>(self) -> [T; M] {
@@ -440,6 +449,21 @@ mod tests {
         let array_ref: &[i32; 5] = arr.as_array();
         assert_eq!(array_ref[0], 10);
         assert_eq!(array_ref[4], 50);
+    }
+
+    #[test]
+    fn test_as_array_mut() {
+        let mut arr: ArrayPlusExtra<i32, 2, 3> = ArrayPlusExtra::new(0);
+        arr[0] = 20;
+        arr[4] = 50;
+
+        let array_ref: &mut [i32; 5] = arr.as_array_mut();
+        assert_eq!(array_ref[0], 20);
+        assert_eq!(array_ref[4], 50);
+        array_ref[0] = 30;
+        array_ref[4] = 10;
+        assert_eq!(array_ref[0], 30);
+        assert_eq!(array_ref[4], 10);
     }
 
     #[test]

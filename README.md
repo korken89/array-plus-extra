@@ -12,11 +12,8 @@ This allows the creation of arrays that would require more powerful const-generi
 
 - Specify both base size (N) and extra elements (EXTRA) at compile time
 - Deref to `&{mut} [T]` provides safe access to all N+EXTRA elements
-- `as_slice()` and `as_mut_slice()` work in const contexts
-- No runtime overhead compared to raw arrays
-- Works in embedded and bare-metal environments
-- All unsafe code verified with **Miri** for undefined behavior
-- Optional `serde` support for serialization/deserialization
+- All methods work in const contexts
+- All code verified with **Miri** for undefined behavior
 
 ## Examples
 
